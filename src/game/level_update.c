@@ -973,15 +973,72 @@ s32 play_mode_normal(void) {
 #endif
 
     if (dayNightSetting >= 0) {
+        s32 y = 16;
+
         if (gPlayer1Controller->buttonPressed & L_TRIG)
             dayNightState = (dayNightState + 1) % 2; // ^= could work here, but bad practice in the event there's more than 2 states
 
-        if (dayNightState == 1)
-            print_text(16, 32, "NIGHT");
-        else
-            print_text(16, 32, "DAY");
+        switch (dayNightSetting) {
+            case 0:
+                print_text_centered(SCREEN_CENTER_X, y, "DAY LOOP");
+                break;
+            case 1:
+                print_text_centered(SCREEN_CENTER_X, y, "NIGHT LOOP");
+                break;
+            case 2:
+                print_text_centered(SCREEN_CENTER_X, y, "AWAITING NIGHT TRANS 1");
+                break;
+            case 3:
+                print_text_centered(SCREEN_CENTER_X, y, "AWAITING NIGHT TRANS 1");
+                break;
+            case 4:
+                print_text_centered(SCREEN_CENTER_X, y, "TRANSITIONING TO NIGHT 1");
+                break;
+            case 5:
+                print_text_centered(SCREEN_CENTER_X, y, "AWAITING DAY TRANS 2");
+                break;
+            case 6:
+                print_text_centered(SCREEN_CENTER_X, y, "AWAITING NIGHT TRANS 2");
+                break;
+            case 7:
+                print_text_centered(SCREEN_CENTER_X, y, "TRANSITIONING TO NIGHT 2");
+                break;
+            case 8:
+                print_text_centered(SCREEN_CENTER_X, y, "AWAITING DAY TRANS 1");
+                break;
+            case 9:
+                print_text_centered(SCREEN_CENTER_X, y, "AWAITING DAY TRANS 1");
+                break;
+            case 10:
+                print_text_centered(SCREEN_CENTER_X, y, "AWAITING DAY TRANS 1");
+                break;
+            case 11:
+                print_text_centered(SCREEN_CENTER_X, y, "TRANSITIONING TO DAY 1");
+                break;
+            case 12:
+                print_text_centered(SCREEN_CENTER_X, y, "AWAITING NIGHT TRANS 2");
+                break;
+            case 13:
+                print_text_centered(SCREEN_CENTER_X, y, "AWAITING DAY TRANS 2");
+                break;
+            case 14:
+                print_text_centered(SCREEN_CENTER_X, y, "TRANSITIONING TO DAY 2");
+                break;
+            case 15:
+                print_text_centered(SCREEN_CENTER_X, y, "AWAITING NIGHT TRANS 1");
+                break;
+        }
 
-        print_text_fmt_int(16, 16, "MUSIC STATE %d", dayNightSetting);
+        print_text_centered(SCREEN_CENTER_X, 200, "PRESS L TO SWITCH");
+
+        if (dayNightState == 1)
+            print_text_centered(SCREEN_CENTER_X, 176, "NIGHT");
+        else
+            print_text_centered(SCREEN_CENTER_X, 176, "DAY");
+
+        char disp[64];
+        sprintf(disp, "BGM SETTING INDEX %d", dayNightSetting);
+        print_text_centered(SCREEN_CENTER_X, 40, disp);
     }
 
     warp_area();

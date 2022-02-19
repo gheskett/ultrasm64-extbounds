@@ -17,6 +17,7 @@
 #include "engine/math_util.h"
 #include "puppycam2.h"
 #include "puppyprint.h"
+#include "audio/synthesis.h"
 
 #include "config.h"
 
@@ -531,6 +532,9 @@ void render_hud_camera_status(void) {
  */
 void render_hud(void) {
     s16 hudDisplayFlags = gHudDisplay.flags;
+
+    if (dayNightSetting >= 0)
+        hudDisplayFlags = HUD_DISPLAY_NONE; // to not block screen
 
     if (hudDisplayFlags == HUD_DISPLAY_NONE) {
         sPowerMeterHUD.animation = POWER_METER_HIDDEN;
