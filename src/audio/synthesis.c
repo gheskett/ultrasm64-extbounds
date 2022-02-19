@@ -930,7 +930,7 @@ struct AdpcmLoop *getLastDayNightSettings(s32 lastLoopIndex, u32 instrument, u32
         instrument = 0;
 
     u32 index = lastLoopIndex * instCount + instrument;
-    if (lastLoopIndex > 0 && (u32) index < numEntries)
+    if (lastLoopIndex >= 0 && (u32) index < numEntries)
         return &strmLoops[index];
 
     return NULL;
