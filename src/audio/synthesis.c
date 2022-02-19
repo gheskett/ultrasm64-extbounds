@@ -838,7 +838,7 @@ u32 entryOffsets0x26[] = {0, 2842652}; // Entry sample offsets on note init (i.e
 /**
  * Padding value is used as bitflag space for the LOOP_JUMP_STATE values.
  * Main loops aren't LOOP_JUMP_STATE_ALL in this case simply because they conflict with other transition points.
- * The `state` array is represented as 16 Big Endian PCM-16 samples immediately following (and including) the loop start sample. PCM values should be gathered AFTER converting audio to VADPCM. 
+ * The `state` array is represented as 16 Big Endian PCM-16 samples immediately following (and including) the loop start sample. PCM values should be gathered AFTER converting audio to VADPCM.
  * The PCM data can sometimes be viewed in a hex editor at the very bottom of the aifc file(s). They seemingly don't depend on the loop end offset at all.
  */
 struct AdpcmLoop strmLoops0x26[] = {
