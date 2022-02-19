@@ -833,117 +833,143 @@ u8 dayNightState = 0;
 
 #define LOOP_JUMP_STATE_ALL 0xFFFFFFFF
 
-u32 entryOffsets0x26[] = {0, 2842652};
+u32 entryOffsets0x26[] = {0, 2842652}; // Entry sample offsets on note init (i.e. night theme starts its music at sample 2842652)
 
-// Padding used as bitflags for LOOP_JUMP_STATE values
-// Main loops aren't LOOP_JUMP_STATE_ALL simply because they conflict with other transition points
+/**
+ * Padding value is used as bitflag space for the LOOP_JUMP_STATE values.
+ * Main loops aren't LOOP_JUMP_STATE_ALL in this case simply because they conflict with other transition points.
+ * The `state` array is represented as 16 Big Endian PCM-16 samples immediately following (and including) the loop start sample. PCM values should be gathered AFTER converting audio to VADPCM. 
+ * The PCM data can sometimes be viewed in a hex editor at the very bottom of the aifc file(s). They seemingly don't depend on the loop end offset at all.
+ */
 struct AdpcmLoop strmLoops0x26[] = {
-    // Day Loop
+/* Day Loop */
+    // Main Day Loop
     {245248, 2665248, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 0
         {0x0916, 0x0A19, 0x084A, 0x0641, 0x02A9, 0x01BA, 0x030E, 0x0244, 0x0027, 0xFD4A, 0xFB91, 0xFA29, 0xF885, 0xF3CD, 0xEF51, 0xEBAF}}, // Loop Start PCM Data L
     {245248, 2665248, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 0
         {0x23FE, 0x1C4D, 0x1629, 0x1644, 0x186F, 0x1BD6, 0x1EE5, 0x1D9C, 0x1990, 0x11E9, 0x0938, 0x0235, 0xFE98, 0xFE50, 0x0033, 0x0469}}, // Loop Start PCM Data R
 
-    // Night Loop
-    {3149458, 6206300, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 1, Pad being used as a strm entry point
+/* Night Loop */
+    // Main Night Loop
+    {3149458, 6206300, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 1
         {0xF8FA, 0xF943, 0xF9A1, 0xF9E7, 0xFA59, 0xFAC5, 0xFB56, 0xFBEA, 0xFC68, 0xFD03, 0xFDA9, 0xFE4F, 0xFEED, 0xFF8F, 0x005C, 0x011D}}, // Loop Start PCM Data L
-    {3149458, 6206300, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 1, Pad being used as a strm entry point
+    {3149458, 6206300, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 1
         {0x0133, 0x0141, 0x013E, 0x012E, 0x00F8, 0x00CA, 0x00B5, 0x008F, 0x0060, 0x003E, 0x0036, 0x001E, 0x000D, 0x0032, 0x0088, 0x0109}}, // Loop Start PCM Data R
 
-    // Day-Night 1
+/* Day-Night 1 */
+    // Intro Day -> Night Transition 1
     {10096041, 245248, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 2
         {0xF03A, 0xF4D7, 0xF752, 0xF94D, 0xFBDF, 0xFEBA, 0x029A, 0x05FF, 0x06E8, 0x07AF, 0x09D6, 0x08C7, 0x0733, 0x03DB, 0x018A, 0x0279}}, // Loop Start PCM Data L
     {10096041, 245248, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 2
         {0xF6AB, 0xF662, 0xF599, 0xF785, 0xFE1B, 0x0971, 0x1565, 0x1F3F, 0x2556, 0x24C1, 0x1DDF, 0x182E, 0x1585, 0x16EB, 0x1AE1, 0x1E59}}, // Loop Start PCM Data R
 
+    // Post-loop Day -> Night Transition 1
     {10096041, 2665248, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 3, conflicts with loop start so needs its own slot
         {0xF03A, 0xF4D7, 0xF752, 0xF94D, 0xFBDF, 0xFEBA, 0x029A, 0x05FF, 0x06E8, 0x07AF, 0x09D6, 0x08C7, 0x0733, 0x03DB, 0x018A, 0x0279}}, // Loop Start PCM Data L
     {10096041, 2665248, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 3, conflicts with loop start so needs its own slot
         {0xF6AB, 0xF662, 0xF599, 0xF785, 0xFE1B, 0x0971, 0x1565, 0x1F3F, 0x2556, 0x24C1, 0x1DDF, 0x182E, 0x1585, 0x16EB, 0x1AE1, 0x1E59}}, // Loop Start PCM Data R
-
+    
+    // Night Transition 1 -> Night
     {4665248, 11476241, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 4
         {0xFF94, 0x0036, 0x00EC, 0x01B6, 0x0285, 0x034C, 0x0416, 0x04AA, 0x0543, 0x05A9, 0x05E9, 0x05DE, 0x05B3, 0x0555, 0x04DC, 0x0405}}, // Loop Start PCM Data L
     {4665248, 11476241, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 4
         {0x00E7, 0x0185, 0x01DC, 0x0230, 0x028F, 0x02C2, 0x02C6, 0x02CC, 0x0292, 0x0262, 0x021A, 0x01D5, 0x0195, 0x015C, 0x0138, 0x0124}}, // Loop Start PCM Data R
 
+    // Night Transition 1 -> Day Transition 2
     {8309316, 11476241, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 5
         {0xFDB0, 0xFDE4, 0xFE3E, 0xFE8C, 0xFF0F, 0xFF9E, 0x004E, 0x00FD, 0x01B2, 0x0283, 0x035C, 0x0421, 0x04D0, 0x0559, 0x05C4, 0x05E5}}, // Loop Start PCM Data L
     {8309316, 11476241, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 5
         {0xFD1D, 0xFDFF, 0xFED5, 0xFF9D, 0x0032, 0x00D0, 0x017E, 0x01DF, 0x021A, 0x027A, 0x02AE, 0x02B4, 0x02AB, 0x0279, 0x023F, 0x01F2}}, // Loop Start PCM Data R
 
-    // Day-Night 2
+/* Day-Night 2 */
+    // Day -> Night Transition 2
     {6547352, 1445248, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 6
         {0xFB09, 0xF7E1, 0xF338, 0xEFCC, 0xEB53, 0xE6E2, 0xE528, 0xE2C1, 0xE189, 0xE09C, 0xDF72, 0xDFA8, 0xE23F, 0xE546, 0xE967, 0xF01A}}, // Loop Start PCM Data L
     {6547352, 1445248, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 6
         {0xE85B, 0xE8A1, 0xEA45, 0xEB3B, 0xEC31, 0xECA0, 0xECB5, 0xEC8B, 0xEDBC, 0xEF3F, 0xF0EA, 0xF31E, 0xF510, 0xF845, 0xFD2A, 0x0272}}, // Loop Start PCM Data R
 
+    // Night Transition 2 -> Night
     {3149458, 7905105, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 7
         {0xF8FA, 0xF943, 0xF9A1, 0xF9E7, 0xFA59, 0xFAC5, 0xFB56, 0xFBEA, 0xFC68, 0xFD03, 0xFDA9, 0xFE4F, 0xFEED, 0xFF8F, 0x005C, 0x011D}}, // Loop Start PCM Data L
     {3149458, 7905105, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 7
         {0x0133, 0x0141, 0x013E, 0x012E, 0x00F8, 0x00CA, 0x00B5, 0x008F, 0x0060, 0x003E, 0x0036, 0x001E, 0x000D, 0x0032, 0x0088, 0x0109}}, // Loop Start PCM Data R
 
+    // Night Transition 2 -> Day Transition 1
     {11880451, 7905105, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 8
         {0xF833, 0xF88F, 0xF8E8, 0xF943, 0xF993, 0xFA0A, 0xFA82, 0xFB08, 0xFB9F, 0xFC3B, 0xFCC3, 0xFD48, 0xFDE4, 0xFE82, 0xFF30, 0xFFE2}}, // Loop Start PCM Data L
     {11880451, 7905105, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 8
         {0x008B, 0x00AD, 0x00EC, 0x011B, 0x00FD, 0x00E0, 0x00F4, 0x00F7, 0x00CE, 0x009C, 0x0095, 0x005A, 0x0030, 0xFFF4, 0xFFFD, 0x0053}}, // Loop Start PCM Data R
 
-    // Night-Day 1
+/* Night-Day 1 */
+    // Intro Night -> Day Transition 1
     {11880451, 3149458, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 9
         {0xF833, 0xF88F, 0xF8E8, 0xF943, 0xF993, 0xFA0A, 0xFA82, 0xFB08, 0xFB9F, 0xFC3B, 0xFCC3, 0xFD48, 0xFDE4, 0xFE82, 0xFF30, 0xFFE2}}, // Loop Start PCM Data L
     {11880451, 3149458, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 9
         {0x008B, 0x00AD, 0x00EC, 0x011B, 0x00FD, 0x00E0, 0x00F4, 0x00F7, 0x00CE, 0x009C, 0x0095, 0x005A, 0x0030, 0xFFF4, 0xFFFD, 0x0053}}, // Loop Start PCM Data R
 
+    // Post-loop Night -> Day Transition 1
     {11880451, 6206300, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 10, conflicts with loop start so needs its own slot
         {0xF833, 0xF88F, 0xF8E8, 0xF943, 0xF993, 0xFA0A, 0xFA82, 0xFB08, 0xFB9F, 0xFC3B, 0xFCC3, 0xFD48, 0xFDE4, 0xFE82, 0xFF30, 0xFFE2}}, // Loop Start PCM Data L
     {11880451, 6206300, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 10, conflicts with loop start so needs its own slot
         {0x008B, 0x00AD, 0x00EC, 0x011B, 0x00FD, 0x00E0, 0x00F4, 0x00F7, 0x00CE, 0x009C, 0x0095, 0x005A, 0x0030, 0xFFF4, 0xFFFD, 0x0053}}, // Loop Start PCM Data R
 
+    // Day Transition 1 -> Day
     {1445248, 13202724, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 11
         {0xE120, 0xDFBB, 0xDF4C, 0xE17E, 0xE445, 0xE7D4, 0xEE2E, 0xF49A, 0xFA40, 0xFDA3, 0xFF6E, 0x021A, 0x063A, 0x0B9B, 0x0F08, 0x1112}}, // Loop Start PCM Data L
     {1445248, 13202724, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 11
         {0xEEB9, 0xF06C, 0xF2AA, 0xF42B, 0xF69E, 0xFB96, 0x007C, 0x05A2, 0x093B, 0x0AAE, 0x0C2F, 0x0DA7, 0x0F0C, 0x1054, 0x0F7E, 0x0E51}}, // Loop Start PCM Data R
 
+    // Day Transition 1 -> Night Transition 2
     {6547352, 13202724, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 12
         {0xFB09, 0xF7E1, 0xF338, 0xEFCC, 0xEB53, 0xE6E2, 0xE528, 0xE2C1, 0xE189, 0xE09C, 0xDF72, 0xDFA8, 0xE23F, 0xE546, 0xE967, 0xF01A}}, // Loop Start PCM Data L
     {6547352, 13202724, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 12
         {0xE85B, 0xE8A1, 0xEA45, 0xEB3B, 0xEC31, 0xECA0, 0xECB5, 0xEC8B, 0xEDBC, 0xEF3F, 0xF0EA, 0xF31E, 0xF510, 0xF845, 0xFD2A, 0x0272}}, // Loop Start PCM Data R
 
-    // Night-Day 2
+/* Night-Day 2 */
+    // Night -> Day Transition 2
     {8309316, 4665248, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 13
         {0xFDB0, 0xFDE4, 0xFE3E, 0xFE8C, 0xFF0F, 0xFF9E, 0x004E, 0x00FD, 0x01B2, 0x0283, 0x035C, 0x0421, 0x04D0, 0x0559, 0x05C4, 0x05E5}}, // Loop Start PCM Data L
     {8309316, 4665248, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 13
         {0xFD1D, 0xFDFF, 0xFED5, 0xFF9D, 0x0032, 0x00D0, 0x017E, 0x01DF, 0x021A, 0x027A, 0x02AE, 0x02B4, 0x02AB, 0x0279, 0x023F, 0x01F2}}, // Loop Start PCM Data R
 
+    // Day Transition 2 -> Day
     {245248, 9696040, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 14
         {0x0916, 0x0A19, 0x084A, 0x0641, 0x02A9, 0x01BA, 0x030E, 0x0244, 0x0027, 0xFD4A, 0xFB91, 0xFA29, 0xF885, 0xF3CD, 0xEF51, 0xEBAF}}, // Loop Start PCM Data L
     {245248, 9696040, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 14
         {0x23FE, 0x1C4D, 0x1629, 0x1644, 0x186F, 0x1BD6, 0x1EE5, 0x1D9C, 0x1990, 0x11E9, 0x0938, 0x0235, 0xFE98, 0xFE50, 0x0033, 0x0469}}, // Loop Start PCM Data R
 
+    // Day Transition 2 -> Night Transition 1
     {10096041, 9696040, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 15
         {0xF03A, 0xF4D7, 0xF752, 0xF94D, 0xFBDF, 0xFEBA, 0x029A, 0x05FF, 0x06E8, 0x07AF, 0x09D6, 0x08C7, 0x0733, 0x03DB, 0x018A, 0x0279}}, // Loop Start PCM Data L
     {10096041, 9696040, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 15
         {0xF6AB, 0xF662, 0xF599, 0xF785, 0xFE1B, 0x0971, 0x1565, 0x1F3F, 0x2556, 0x24C1, 0x1DDF, 0x182E, 0x1585, 0x16EB, 0x1AE1, 0x1E59}}, // Loop Start PCM Data R
 };
-struct AdpcmLoop *getLastDayNightSettings(s32 lastLoopIndex, u32 instrument, u32 instCount, struct AdpcmLoop *strmLoops, u32 numEntries) {
+
+struct AdpcmLoop *getLastDayNightSetting(s32 lastLoopIndex, s32 instrument, u32 instCount, struct AdpcmLoop *strmLoops, s32 numEntries) {
     instrument -= 1;
-    if (instrument >= 0x80)
+    if (instrument < 0)
         instrument = 0;
 
-    u32 index = lastLoopIndex * instCount + instrument;
-    if (lastLoopIndex >= 0 && (u32) index < numEntries)
+    instrument %= instCount;
+
+    s32 index = lastLoopIndex * instCount + instrument;
+    if (lastLoopIndex >= 0 && index < numEntries)
         return &strmLoops[index];
 
     return NULL;
 }
-struct AdpcmLoop *getDayNightSettings(u32 instrument, u32 samplePos, u32 instCount, struct AdpcmLoop *strmLoops, u32 numEntries) {
+
+struct AdpcmLoop *getDayNightSetting(u32 samplePos, s32 instrument, u32 instCount, struct AdpcmLoop *strmLoops, s32 numEntries) {
     s32 returnIndex = -1;
     u32 closestEndSample = -1;
 
     instrument -= 1;
-    if (instrument >= 0x80)
+    if (instrument < 0)
         instrument = 0;
 
-    for (u32 i = 0; i < numEntries; i += instCount) {
+    instrument %= instCount;
+
+    for (s32 i = 0; i < numEntries; i += instCount) {
         if (!(strmLoops[i].pad & (1 << dayNightState)))
             continue;
         
@@ -953,7 +979,7 @@ struct AdpcmLoop *getDayNightSettings(u32 instrument, u32 samplePos, u32 instCou
         }
     }
 
-    if (returnIndex < 0 || returnIndex + instrument >= numEntries)
+    if (returnIndex < 0 || returnIndex + instrument >= (s32) numEntries)
         return NULL;
 
     dayNightSetting = returnIndex / instCount;
@@ -1137,37 +1163,6 @@ u64 *synthesis_process_notes(s16 *aiBuf, s32 bufLen, u64 *cmd) {
                 loopInfo = audioBookSample->loop;
                 lastLoopInfo = loopInfo;
 
-                // if (note->bankId == 0x26) {
-                //     if (note->instOrWave == 1) {
-                //         char outbuf1[32];
-                //         char outbuf2[32];
-
-                //         char outbuf3[32];
-                //         char outbuf4[32];
-                //         char outbuf5[32];
-                //         char outbuf6[32];
-
-                //         sprintf(outbuf1, "0*%08x 0*%08x", loopInfo->start, loopInfo->end);
-                //         sprintf(outbuf2, "%d", note->instOrWave);
-
-                //         sprintf(outbuf3, "%04x %04x %04x %04x", loopInfo->state[0], loopInfo->state[1], loopInfo->state[2], loopInfo->state[3]);
-                //         sprintf(outbuf4, "%04x %04x %04x %04x", loopInfo->state[4], loopInfo->state[5], loopInfo->state[6], loopInfo->state[7]);
-                //         sprintf(outbuf5, "%04x %04x %04x %04x", loopInfo->state[8], loopInfo->state[9], loopInfo->state[10], loopInfo->state[11]);
-                //         sprintf(outbuf6, "%04x %04x %04x %04x", loopInfo->state[12], loopInfo->state[13], loopInfo->state[14], loopInfo->state[15]);
-
-                //         print_text(16, 180, outbuf1);
-                //         print_text(16, 164, outbuf2);
-
-                //         print_text(16, 100, outbuf3);
-                //         print_text(16, 84, outbuf4);
-                //         print_text(16, 68, outbuf5);
-                //         print_text(16, 52, outbuf6);
-
-                //         print_text_fmt_int(16, 36, "%d", loopInfo->end);
-                //     }
-                // }
-
-                endPos = loopInfo->end;
                 sampleAddr = audioBookSample->sampleAddr;
                 resampledTempLen = 0;
                 for (curPart = 0; curPart < nParts; curPart++) {
@@ -1206,23 +1201,22 @@ u64 *synthesis_process_notes(s16 *aiBuf, s32 bufLen, u64 *cmd) {
                         s32 s0;
 
                         if (note->bankId == 0x26) {
-                            const u32 size = 32;
-                            const u32 channels = 2;
+                            const s32 channels = 2;
+                            s32 size = ARRAY_COUNT(strmLoops0x26);
 
-                            lastLoopInfo = getLastDayNightSettings(lastLoopIndex, note->instOrWave, channels, strmLoops0x26, size);
+                            lastLoopInfo = getLastDayNightSetting(lastLoopIndex, note->instOrWave, channels, strmLoops0x26, size);
                             if (!lastLoopInfo)
                                 lastLoopInfo = loopInfo;
 
                             if (flags == A_INIT && note->samplePosInt == 0)
                                 note->samplePosInt = entryOffsets0x26[dayNightState % ARRAY_COUNT(entryOffsets0x26)];
 
-                            struct AdpcmLoop *tmp = getDayNightSettings(note->instOrWave, note->samplePosInt, channels, strmLoops0x26, size);
-                            if (tmp) {
+                            struct AdpcmLoop *tmp = getDayNightSetting(note->samplePosInt, note->instOrWave, channels, strmLoops0x26, size);
+                            if (tmp)
                                 loopInfo = tmp;
-
-                                endPos = loopInfo->end;
-                            }
                         }
+                
+                        endPos = loopInfo->end;
 
                         noteFinished = FALSE;
                         restart = FALSE;

@@ -986,46 +986,34 @@ s32 play_mode_normal(void) {
                 print_text_centered(SCREEN_CENTER_X, y, "NIGHT LOOP");
                 break;
             case 2:
-                print_text_centered(SCREEN_CENTER_X, y, "AWAITING NIGHT TRANS 1");
-                break;
             case 3:
+            case 15:
                 print_text_centered(SCREEN_CENTER_X, y, "AWAITING NIGHT TRANS 1");
                 break;
             case 4:
                 print_text_centered(SCREEN_CENTER_X, y, "TRANSITIONING TO NIGHT 1");
                 break;
             case 5:
+            case 13:
                 print_text_centered(SCREEN_CENTER_X, y, "AWAITING DAY TRANS 2");
                 break;
             case 6:
+            case 12:
                 print_text_centered(SCREEN_CENTER_X, y, "AWAITING NIGHT TRANS 2");
                 break;
             case 7:
                 print_text_centered(SCREEN_CENTER_X, y, "TRANSITIONING TO NIGHT 2");
                 break;
             case 8:
-                print_text_centered(SCREEN_CENTER_X, y, "AWAITING DAY TRANS 1");
-                break;
             case 9:
-                print_text_centered(SCREEN_CENTER_X, y, "AWAITING DAY TRANS 1");
-                break;
             case 10:
                 print_text_centered(SCREEN_CENTER_X, y, "AWAITING DAY TRANS 1");
                 break;
             case 11:
                 print_text_centered(SCREEN_CENTER_X, y, "TRANSITIONING TO DAY 1");
                 break;
-            case 12:
-                print_text_centered(SCREEN_CENTER_X, y, "AWAITING NIGHT TRANS 2");
-                break;
-            case 13:
-                print_text_centered(SCREEN_CENTER_X, y, "AWAITING DAY TRANS 2");
-                break;
             case 14:
                 print_text_centered(SCREEN_CENTER_X, y, "TRANSITIONING TO DAY 2");
-                break;
-            case 15:
-                print_text_centered(SCREEN_CENTER_X, y, "AWAITING NIGHT TRANS 1");
                 break;
         }
 
