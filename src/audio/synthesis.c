@@ -837,23 +837,22 @@ u32 entryOffsets0x26[] = {0, 2842652}; // Entry sample offsets on note init (i.e
 
 /**
  * Padding value is used as bitflag space for the LOOP_JUMP_STATE values.
- * Main loops aren't LOOP_JUMP_STATE_ALL in this case simply because they conflict with other transition points.
  * The `state` array is represented as 16 Big Endian PCM-16 samples immediately following (and including) the loop start sample. PCM values should be gathered AFTER converting audio to VADPCM.
  * The PCM data can sometimes be viewed in a hex editor at the very bottom of the aifc file(s). They seemingly don't depend on the loop end offset at all.
  */
 struct AdpcmLoop strmLoops0x26[] = {
 /* Day Loop */
     // Main Day Loop
-    {245248, 2665248, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 0
+    {245248, 2665248, 0xFFFFFFFF, LOOP_JUMP_STATE_ALL, // 0
         {0x0916, 0x0A19, 0x084A, 0x0641, 0x02A9, 0x01BA, 0x030E, 0x0244, 0x0027, 0xFD4A, 0xFB91, 0xFA29, 0xF885, 0xF3CD, 0xEF51, 0xEBAF}}, // Loop Start PCM Data L
-    {245248, 2665248, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 0
+    {245248, 2665248, 0xFFFFFFFF, LOOP_JUMP_STATE_ALL, // 0
         {0x23FE, 0x1C4D, 0x1629, 0x1644, 0x186F, 0x1BD6, 0x1EE5, 0x1D9C, 0x1990, 0x11E9, 0x0938, 0x0235, 0xFE98, 0xFE50, 0x0033, 0x0469}}, // Loop Start PCM Data R
 
 /* Night Loop */
     // Main Night Loop
-    {3149458, 6206300, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 1
+    {3149458, 6206300, 0xFFFFFFFF, LOOP_JUMP_STATE_ALL, // 1
         {0xF8FA, 0xF943, 0xF9A1, 0xF9E7, 0xFA59, 0xFAC5, 0xFB56, 0xFBEA, 0xFC68, 0xFD03, 0xFDA9, 0xFE4F, 0xFEED, 0xFF8F, 0x005C, 0x011D}}, // Loop Start PCM Data L
-    {3149458, 6206300, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 1
+    {3149458, 6206300, 0xFFFFFFFF, LOOP_JUMP_STATE_ALL, // 1
         {0x0133, 0x0141, 0x013E, 0x012E, 0x00F8, 0x00CA, 0x00B5, 0x008F, 0x0060, 0x003E, 0x0036, 0x001E, 0x000D, 0x0032, 0x0088, 0x0109}}, // Loop Start PCM Data R
 
 /* Day-Night 1 */
@@ -864,9 +863,9 @@ struct AdpcmLoop strmLoops0x26[] = {
         {0xF6AB, 0xF662, 0xF599, 0xF785, 0xFE1B, 0x0971, 0x1565, 0x1F3F, 0x2556, 0x24C1, 0x1DDF, 0x182E, 0x1585, 0x16EB, 0x1AE1, 0x1E59}}, // Loop Start PCM Data R
 
     // Post-loop Day -> Night Transition 1
-    {10096041, 2665248, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 3, conflicts with loop start so needs its own slot
+    {10096041, 2665248, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 3, overrides day loop entirely for demonstration purposes, does not need to exist
         {0xF03A, 0xF4D7, 0xF752, 0xF94D, 0xFBDF, 0xFEBA, 0x029A, 0x05FF, 0x06E8, 0x07AF, 0x09D6, 0x08C7, 0x0733, 0x03DB, 0x018A, 0x0279}}, // Loop Start PCM Data L
-    {10096041, 2665248, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 3, conflicts with loop start so needs its own slot
+    {10096041, 2665248, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 3, overrides day loop entirely for demonstration purposes, does not need to exist
         {0xF6AB, 0xF662, 0xF599, 0xF785, 0xFE1B, 0x0971, 0x1565, 0x1F3F, 0x2556, 0x24C1, 0x1DDF, 0x182E, 0x1585, 0x16EB, 0x1AE1, 0x1E59}}, // Loop Start PCM Data R
     
     // Night Transition 1 -> Night
@@ -908,9 +907,9 @@ struct AdpcmLoop strmLoops0x26[] = {
         {0x008B, 0x00AD, 0x00EC, 0x011B, 0x00FD, 0x00E0, 0x00F4, 0x00F7, 0x00CE, 0x009C, 0x0095, 0x005A, 0x0030, 0xFFF4, 0xFFFD, 0x0053}}, // Loop Start PCM Data R
 
     // Post-loop Night -> Day Transition 1
-    {11880451, 6206300, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 10, conflicts with loop start so needs its own slot
+    {11880451, 6206300, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 10, overrides night loop entirely for demonstration purposes, does not need to exist
         {0xF833, 0xF88F, 0xF8E8, 0xF943, 0xF993, 0xFA0A, 0xFA82, 0xFB08, 0xFB9F, 0xFC3B, 0xFCC3, 0xFD48, 0xFDE4, 0xFE82, 0xFF30, 0xFFE2}}, // Loop Start PCM Data L
-    {11880451, 6206300, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 10, conflicts with loop start so needs its own slot
+    {11880451, 6206300, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 10, overrides night loop entirely for demonstration purposes, does not need to exist
         {0x008B, 0x00AD, 0x00EC, 0x011B, 0x00FD, 0x00E0, 0x00F4, 0x00F7, 0x00CE, 0x009C, 0x0095, 0x005A, 0x0030, 0xFFF4, 0xFFFD, 0x0053}}, // Loop Start PCM Data R
 
     // Day Transition 1 -> Day
@@ -973,7 +972,9 @@ struct AdpcmLoop *getDayNightSetting(u32 samplePos, s32 instrument, u32 instCoun
         if (!(strmLoops[i].pad & (1 << dayNightState)))
             continue;
         
-        if (strmLoops[i].end < closestEndSample && samplePos < strmLoops[i].end) {
+        // strmLoops[i].end <= closestEndSample gives higher indexes priority if there's a tie
+        // samplePos <= strmLoops[i].end check allows for entry point arrivals to transition to exit point immediately if different settings share start/end positions
+        if (strmLoops[i].end <= closestEndSample && samplePos <= strmLoops[i].end) {
             returnIndex = i;
             closestEndSample = strmLoops[i].end;
         }
