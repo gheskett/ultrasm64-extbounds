@@ -1165,6 +1165,9 @@ s32 note_init_for_layer(struct Note *note, struct SequenceChannelLayer *seqLayer
     if (note->sound == NULL) {
         build_synthetic_wave(note, seqLayer);
     }
+    else {
+        note->instOrWave = seqLayer->seqChannel->instOrWave;
+    }
     note_init(note);
     return FALSE;
 }

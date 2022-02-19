@@ -4,6 +4,7 @@
 #include "seq_ids.h"
 #include "dialog_ids.h"
 #include "audio/external.h"
+#include "audio/synthesis.h"
 #include "level_update.h"
 #include "game_init.h"
 #include "level_update.h"
@@ -31,6 +32,7 @@
 #include "puppyprint.h"
 #include "puppylights.h"
 #include "level_commands.h"
+#include "print.h"
 
 #include "config.h"
 
@@ -969,6 +971,18 @@ s32 play_mode_normal(void) {
         }
     }
 #endif
+
+    if (dayNightSetting >= 0) {
+        if (gPlayer1Controller->buttonPressed & L_TRIG)
+            dayNightState = (dayNightState + 1) % 2; // ^= could work here, but bad practice in the event there's more than 2 states
+
+        if (dayNightState == 1)
+            print_text(16, 32, "NIGHT");
+        else
+            print_text(16, 32, "DAY");
+
+        print_text_fmt_int(16, 16, "MUSIC STATE %d", dayNightSetting);
+    }
 
     warp_area();
     check_instant_warp();

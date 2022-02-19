@@ -132,6 +132,9 @@ extern struct SynthesisReverb gSynthesisReverb;
 extern s16 D_SH_803479B4;
 #endif
 
+extern s32 dayNightSetting;
+extern u8 dayNightState;
+
 u64 *synthesis_execute(u64 *cmdBuf, s32 *writtenCmds, s16 *aiBuf, s32 bufLen);
 #if defined(VERSION_JP) || defined(VERSION_US)
 void note_init_volume(struct Note *note);

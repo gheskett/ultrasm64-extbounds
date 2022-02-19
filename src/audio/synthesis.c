@@ -10,6 +10,7 @@
 #include "external.h"
 #include "game/game_init.h"
 #include "engine/math_util.h"
+#include "game/print.h"
 
 
 #define DMEM_ADDR_TEMP 0x0
@@ -822,6 +823,133 @@ u64 *synthesis_do_one_audio_update(s16 *aiBuf, s32 bufLen, u64 *cmd, s32 updateI
 }
 #endif
 
+s32 dayNightSetting = -1;
+u8 dayNightState = 0;
+
+#define LOOP_JUMP_STATE_0 (1 << 0)
+#define LOOP_JUMP_STATE_1 (1 << 1)
+#define LOOP_JUMP_STATE_2 (1 << 2)
+#define LOOP_JUMP_STATE_3 (1 << 3)
+
+#define LOOP_JUMP_STATE_ALL 0xFFFFFFFF
+
+u32 entryOffsets0x26[] = {0, 2842652};
+
+// Padding used as bitflags for LOOP_JUMP_STATE values
+// Main loops aren't LOOP_JUMP_STATE_ALL simply because they conflict with other transition points
+struct AdpcmLoop strmLoops0x26[] = {
+    // Day Loop
+    {245248, 2665248, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 0
+        {0x08FC, 0x09F0, 0x082D, 0x063C, 0x0289, 0x01C3, 0x02F3, 0x020F, 0xFFFB, 0xFD82, 0xFB59, 0xFA1F, 0xF87B, 0xF3F2, 0xEF74, 0xEBAC}}, // Loop Start PCM Data L
+    {245248, 2665248, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 0
+        {0x238C, 0x1C20, 0x1659, 0x1630, 0x1821, 0x1BEE, 0x1EC2, 0x1E02, 0x194C, 0x11C1, 0x0934, 0x02A7, 0xFE4C, 0xFE1A, 0x0089, 0x04B1}}, // Loop Start PCM Data R
+
+    // Night Loop
+    {3149458, 6206300, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 1, Pad being used as a strm entry point
+        {0xF99B, 0xF9E7, 0xFA52, 0xFACB, 0xFB59, 0xFBEC, 0xFC6B, 0xFCFE, 0xFDAA, 0xFE51, 0xFEE9, 0xFF91, 0x0056, 0x0117, 0x01C8, 0x0289}}, // Loop Start PCM Data L
+    {3149458, 6206300, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 1, Pad being used as a strm entry point
+        {0x0144, 0x0126, 0x00F3, 0x00CB, 0x00B6, 0x0089, 0x005B, 0x003D, 0x003D, 0x001E, 0x0005, 0x002E, 0x008E, 0x010D, 0x01B9, 0x0289}}, // Loop Start PCM Data R
+
+    // Day-Night 1
+    {10096041, 245248, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 2
+        {0x07E1, 0x09C2, 0x08CA, 0x06F8, 0x0414, 0x014E, 0x0298, 0x02A2, 0x0098, 0xFE98, 0xFC1F, 0xFAC1, 0xF8EF, 0xF5AB, 0xF104, 0xEC68}}, // Loop Start PCM Data L
+    {10096041, 245248, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 2
+        {0x2527, 0x1E58, 0x17E4, 0x15A7, 0x16D2, 0x1AB3, 0x1E2A, 0x1EA4, 0x1B4B, 0x147C, 0x0BE0, 0x0483, 0xFFA0, 0xFDD8, 0x0005, 0x0349}}, // Loop Start PCM Data R
+
+    {10096041, 2665248, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 3, conflicts with loop start so needs its own slot
+        {0x07E1, 0x09C2, 0x08CA, 0x06F8, 0x0414, 0x014E, 0x0298, 0x02A2, 0x0098, 0xFE98, 0xFC1F, 0xFAC1, 0xF8EF, 0xF5AB, 0xF104, 0xEC68}}, // Loop Start PCM Data L
+    {10096041, 2665248, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 3, conflicts with loop start so needs its own slot
+        {0x2527, 0x1E58, 0x17E4, 0x15A7, 0x16D2, 0x1AB3, 0x1E2A, 0x1EA4, 0x1B4B, 0x147C, 0x0BE0, 0x0483, 0xFFA0, 0xFDD8, 0x0005, 0x0349}}, // Loop Start PCM Data R
+
+    {4665248, 11476241, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 4
+        {0xFF9B, 0x003D, 0x00EE, 0x01AF, 0x027E, 0x0349, 0x040F, 0x04B1, 0x0544, 0x05A4, 0x05E6, 0x05DC, 0x05B8, 0x055D, 0x04D4, 0x0405}}, // Loop Start PCM Data L
+    {4665248, 11476241, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 4
+        {0x00E4, 0x0186, 0x01D7, 0x0238, 0x0293, 0x02C0, 0x02CA, 0x02CA, 0x0298, 0x025B, 0x021E, 0x01D7, 0x0190, 0x0163, 0x013A, 0x012B}}, // Loop Start PCM Data R
+
+    {8309316, 11476241, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 5
+        {0xFF9B, 0x003D, 0x00EE, 0x01AF, 0x027E, 0x0349, 0x040F, 0x04B1, 0x0544, 0x05A4, 0x05E6, 0x05DC, 0x05B8, 0x055D, 0x04D4, 0x0405}}, // Loop Start PCM Data L
+    {8309316, 11476241, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 5
+        {0x00E4, 0x0186, 0x01D7, 0x0238, 0x0293, 0x02C0, 0x02CA, 0x02CA, 0x0298, 0x025B, 0x021E, 0x01D7, 0x0190, 0x0163, 0x013A, 0x012B}}, // Loop Start PCM Data R
+
+    // Day-Night 2
+    {6547352, 1445248, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 6
+        {0xE14D, 0xE092, 0xDF5D, 0xDFA3, 0xE22C, 0xE51A, 0xE998, 0xF011, 0xF69E, 0xFB91, 0xFE6B, 0x0051, 0x0395, 0x08A6, 0x0CED, 0x0F99}}, // Loop Start PCM Data L
+    {6547352, 1445248, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 6
+        {0xED93, 0xEF23, 0xF10E, 0xF2F5, 0xF4D1, 0xF834, 0xFD36, 0x025B, 0x073F, 0x09F5, 0x0B52, 0x0CBA, 0x0E27, 0x0FE5, 0x0FFE, 0x0EA1}}, // Loop Start PCM Data R
+
+    {3149458, 7905105, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 7
+        {0xF99B, 0xF9E7, 0xFA52, 0xFACB, 0xFB59, 0xFBEC, 0xFC6B, 0xFCFE, 0xFDAA, 0xFE51, 0xFEE9, 0xFF91, 0x0056, 0x0117, 0x01C8, 0x0289}}, // Loop Start PCM Data L
+    {3149458, 7905105, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 7
+        {0x0144, 0x0126, 0x00F3, 0x00CB, 0x00B6, 0x0089, 0x005B, 0x003D, 0x003D, 0x001E, 0x0005, 0x002E, 0x008E, 0x010D, 0x01B9, 0x0289}}, // Loop Start PCM Data R
+
+    {11880451, 7905105, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 8
+        {0xF99B, 0xF9E7, 0xFA52, 0xFACB, 0xFB59, 0xFBEC, 0xFC6B, 0xFCFE, 0xFDAA, 0xFE51, 0xFEE9, 0xFF91, 0x0056, 0x0117, 0x01C8, 0x0289}}, // Loop Start PCM Data L
+    {11880451, 7905105, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 8
+        {0x0144, 0x0126, 0x00F3, 0x00CB, 0x00B6, 0x0089, 0x005B, 0x003D, 0x003D, 0x001E, 0x0005, 0x002E, 0x008E, 0x010D, 0x01B9, 0x0289}}, // Loop Start PCM Data R
+
+    // Night-Day 1
+    {11880451, 3149458, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 9
+        {0xF945, 0xF991, 0xFA06, 0xFA7F, 0xFB08, 0xFBA0, 0xFC3D, 0xFCC1, 0xFD4A, 0xFDE2, 0xFE7F, 0xFF30, 0xFFE7, 0x00A7, 0x0168, 0x0232}}, // Loop Start PCM Data L
+    {11880451, 3149458, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 9
+        {0x0117, 0x00F8, 0x00DA, 0x00EE, 0x00F3, 0x00CB, 0x00A2, 0x008E, 0x005B, 0x002E, 0xFFF1, 0x0000, 0x0056, 0x00D5, 0x0177, 0x024C}}, // Loop Start PCM Data R
+
+    {11880451, 6206300, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 10, conflicts with loop start so needs its own slot
+        {0xF945, 0xF991, 0xFA06, 0xFA7F, 0xFB08, 0xFBA0, 0xFC3D, 0xFCC1, 0xFD4A, 0xFDE2, 0xFE7F, 0xFF30, 0xFFE7, 0x00A7, 0x0168, 0x0232}}, // Loop Start PCM Data L
+    {11880451, 6206300, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 10, conflicts with loop start so needs its own slot
+        {0x0117, 0x00F8, 0x00DA, 0x00EE, 0x00F3, 0x00CB, 0x00A2, 0x008E, 0x005B, 0x002E, 0xFFF1, 0x0000, 0x0056, 0x00D5, 0x0177, 0x024C}}, // Loop Start PCM Data R
+
+    {1445248, 13202724, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 11
+        {0xE0E8, 0xDFAE, 0xDF48, 0xE148, 0xE422, 0xE7F4, 0xEE0C, 0xF4AE, 0xFA33, 0xFD72, 0xFFAA, 0x020F, 0x0665, 0x0BAE, 0x0F06, 0x10E2}}, // Loop Start PCM Data L
+    {1445248, 13202724, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 11
+        {0xEEA4, 0xF05D, 0xF26C, 0xF411, 0xF6D1, 0xFB6E, 0x0098, 0x05B8, 0x0948, 0x0AE8, 0x0C36, 0x0DCC, 0x0F3E, 0x107D, 0x0F85, 0x0E78}}, // Loop Start PCM Data R
+
+    {6547352, 13202724, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 12
+        {0xE0E8, 0xDFAE, 0xDF48, 0xE148, 0xE422, 0xE7F4, 0xEE0C, 0xF4AE, 0xFA33, 0xFD72, 0xFFAA, 0x020F, 0x0665, 0x0BAE, 0x0F06, 0x10E2}}, // Loop Start PCM Data L
+    {6547352, 13202724, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 12
+        {0xEEA4, 0xF05D, 0xF26C, 0xF411, 0xF6D1, 0xFB6E, 0x0098, 0x05B8, 0x0948, 0x0AE8, 0x0C36, 0x0DCC, 0x0F3E, 0x107D, 0x0F85, 0x0E78}}, // Loop Start PCM Data R
+
+    // Night-Day 2
+    {8309316, 4665248, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 13
+        {0xF945, 0xF991, 0xFA06, 0xFA7F, 0xFB08, 0xFBA0, 0xFC3D, 0xFCC1, 0xFD4A, 0xFDE2, 0xFE7F, 0xFF30, 0xFFE7, 0x00A7, 0x0168, 0x0232}}, // Loop Start PCM Data L
+    {8309316, 4665248, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 13
+        {0x0117, 0x00F8, 0x00DA, 0x00EE, 0x00F3, 0x00CB, 0x00A2, 0x008E, 0x005B, 0x002E, 0xFFF1, 0x0000, 0x0056, 0x00D5, 0x0177, 0x024C}}, // Loop Start PCM Data R
+
+    {245248, 9696040, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 14
+        {0xE0E8, 0xDFAE, 0xDF48, 0xE148, 0xE422, 0xE7F4, 0xEE0C, 0xF4AE, 0xFA33, 0xFD72, 0xFFAA, 0x020F, 0x0665, 0x0BAE, 0x0F06, 0x10E2}}, // Loop Start PCM Data L
+    {245248, 9696040, 0xFFFFFFFF, LOOP_JUMP_STATE_0, // 14
+        {0xEEA4, 0xF05D, 0xF26C, 0xF411, 0xF6D1, 0xFB6E, 0x0098, 0x05B8, 0x0948, 0x0AE8, 0x0C36, 0x0DCC, 0x0F3E, 0x107D, 0x0F85, 0x0E78}}, // Loop Start PCM Data R
+
+    {10096041, 9696040, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 15
+        {0xE0E8, 0xDFAE, 0xDF48, 0xE148, 0xE422, 0xE7F4, 0xEE0C, 0xF4AE, 0xFA33, 0xFD72, 0xFFAA, 0x020F, 0x0665, 0x0BAE, 0x0F06, 0x10E2}}, // Loop Start PCM Data L
+    {10096041, 9696040, 0xFFFFFFFF, LOOP_JUMP_STATE_1, // 15
+        {0xEEA4, 0xF05D, 0xF26C, 0xF411, 0xF6D1, 0xFB6E, 0x0098, 0x05B8, 0x0948, 0x0AE8, 0x0C36, 0x0DCC, 0x0F3E, 0x107D, 0x0F85, 0x0E78}}, // Loop Start PCM Data R
+};
+struct AdpcmLoop *getDayNightSettings(u32 instrument, u32 samplePos, u32 instCount, struct AdpcmLoop *strmLoops, u32 numEntries) {
+    s32 returnIndex = -1;
+    u32 closestEndSample = -1;
+
+    instrument -= 1;
+    if (instrument >= 0x80)
+        instrument = 0;
+
+    for (u32 i = 0; i < numEntries; i += instCount) {
+        if (!(strmLoops[i].pad & (1 << dayNightState)))
+            continue;
+        
+        if (strmLoops[i].end < closestEndSample && samplePos < strmLoops[i].end) {
+            returnIndex = i;
+            closestEndSample = strmLoops[i].end;
+        }
+    }
+
+    if (returnIndex < 0 || returnIndex + instrument >= numEntries)
+        return NULL;
+
+    dayNightSetting = returnIndex / instCount;
+
+    return &strmLoops[returnIndex + instrument];
+}
+
 #ifdef VERSION_EU
 // Processes just one note, not all
 u64 *synthesis_process_note(struct Note *note, struct NoteSubEu *noteSubEu, struct NoteSynthesisState *synthesisState, UNUSED s16 *aiBuf, s32 bufLen, u64 *cmd) {
@@ -896,6 +1024,8 @@ u64 *synthesis_process_notes(s16 *aiBuf, s32 bufLen, u64 *cmd) {
 #endif
     s32 resampledTempLen;                    // spD8, spAC
     u16 noteSamplesDmemAddrBeforeResampling; // spD6, spAA
+    
+    dayNightSetting = -1;
 
 
 #ifndef VERSION_EU
@@ -927,7 +1057,7 @@ u64 *synthesis_process_notes(s16 *aiBuf, s32 bufLen, u64 *cmd) {
 #endif
                 flags = A_INIT;
 #ifndef VERSION_EU
-                note->samplePosInt = 0;
+                note->samplePosInt = 0; // TODO: stream night init index
                 note->samplePosFrac = 0;
 #else
                 synthesisState->restart = FALSE;
@@ -992,6 +1122,37 @@ u64 *synthesis_process_notes(s16 *aiBuf, s32 bufLen, u64 *cmd) {
 #endif
 
                 loopInfo = audioBookSample->loop;
+
+                // if (note->bankId == 0x26) {
+                //     if (note->instOrWave == 1) {
+                //         char outbuf1[32];
+                //         char outbuf2[32];
+
+                //         char outbuf3[32];
+                //         char outbuf4[32];
+                //         char outbuf5[32];
+                //         char outbuf6[32];
+
+                //         sprintf(outbuf1, "0*%08x 0*%08x", loopInfo->start, loopInfo->end);
+                //         sprintf(outbuf2, "%d", note->instOrWave);
+
+                //         sprintf(outbuf3, "%04x %04x %04x %04x", loopInfo->state[0], loopInfo->state[1], loopInfo->state[2], loopInfo->state[3]);
+                //         sprintf(outbuf4, "%04x %04x %04x %04x", loopInfo->state[4], loopInfo->state[5], loopInfo->state[6], loopInfo->state[7]);
+                //         sprintf(outbuf5, "%04x %04x %04x %04x", loopInfo->state[8], loopInfo->state[9], loopInfo->state[10], loopInfo->state[11]);
+                //         sprintf(outbuf6, "%04x %04x %04x %04x", loopInfo->state[12], loopInfo->state[13], loopInfo->state[14], loopInfo->state[15]);
+
+                //         print_text(16, 180, outbuf1);
+                //         print_text(16, 164, outbuf2);
+
+                //         print_text(16, 100, outbuf3);
+                //         print_text(16, 84, outbuf4);
+                //         print_text(16, 68, outbuf5);
+                //         print_text(16, 52, outbuf6);
+
+                //         print_text_fmt_int(16, 36, "%d", loopInfo->end);
+                //     }
+                // }
+
                 endPos = loopInfo->end;
                 sampleAddr = audioBookSample->sampleAddr;
                 resampledTempLen = 0;
@@ -1029,6 +1190,18 @@ u64 *synthesis_process_notes(s16 *aiBuf, s32 bufLen, u64 *cmd) {
                     while (nAdpcmSamplesProcessed != samplesLenAdjusted) {
                         s32 samplesRemaining; // v1
                         s32 s0;
+
+                        if (note->bankId == 0x26) {
+                            if (flags == A_INIT && note->samplePosInt == 0)
+                                note->samplePosInt = entryOffsets0x26[dayNightState % ARRAY_COUNT(entryOffsets0x26)];
+
+                            struct AdpcmLoop *tmp = getDayNightSettings(note->instOrWave, note->samplePosInt, 2, strmLoops0x26, 32);
+                            if (tmp) {
+                                loopInfo = tmp;
+
+                                endPos = loopInfo->end;
+                            }
+                        }
 
                         noteFinished = FALSE;
                         restart = FALSE;
@@ -1102,13 +1275,13 @@ u64 *synthesis_process_notes(s16 *aiBuf, s32 bufLen, u64 *cmd) {
 
 #ifdef VERSION_EU
                         if (synthesisState->restart != FALSE) {
-                            aSetLoop(cmd++, VIRTUAL_TO_PHYSICAL2(audioBookSample->loop->state));
+                            aSetLoop(cmd++, VIRTUAL_TO_PHYSICAL2(loopInfo->state));
                             flags = A_LOOP; // = 2
                             synthesisState->restart = FALSE;
                         }
 #else
                         if (note->restart != FALSE) {
-                            aSetLoop(cmd++, VIRTUAL_TO_PHYSICAL2(audioBookSample->loop->state));
+                            aSetLoop(cmd++, VIRTUAL_TO_PHYSICAL2(loopInfo->state));
                             flags = A_LOOP; // = 2
                             note->restart = FALSE;
                         }
