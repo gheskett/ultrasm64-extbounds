@@ -26,6 +26,7 @@
 #include "debug_box.h"
 #include "engine/colors.h"
 #include "profiling.h"
+#include "pl/libpl.h"
 #ifdef S2DEX_TEXT_ENGINE
 #include "s2d_engine/init.h"
 #endif
@@ -454,6 +455,12 @@ void render_game(void) {
 
     gViewportOverride = NULL;
     gViewportClip     = NULL;
+
+    pl_increment_timer();
+#ifdef PUPPYPRINT
+    print_set_envcolour(255, 255, 255, 255);
+    print_small_text(16, 16, pl_get_timer(), PRINT_TEXT_ALIGN_LEFT, PRINT_ALL, FONT_OUTLINE);
+#endif
 
     profiler_update(PROFILER_TIME_GFX, profiler_get_delta(PROFILER_DELTA_COLLISION) - first);
     profiler_print_times();

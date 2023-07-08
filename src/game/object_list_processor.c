@@ -22,6 +22,7 @@
 #include "puppyprint.h"
 #include "puppylights.h"
 #include "profiling.h"
+#include "pl/libpl.h"
 
 
 /**
@@ -244,6 +245,8 @@ void copy_mario_state_to_object(void) {
     gCurrentObject->oAngleVelPitch = gMarioStates[i].angleVel[0];
     gCurrentObject->oAngleVelYaw = gMarioStates[i].angleVel[1];
     gCurrentObject->oAngleVelRoll = gMarioStates[i].angleVel[2];
+
+    pl_set_mario_pos(gMarioStates[i].pos);
 }
 
 /**

@@ -15,6 +15,7 @@
 #include "save_file.h"
 #include "sound_init.h"
 #include "mario.h"
+#include "print.h"
 #include "camera.h"
 #include "object_list_processor.h"
 #include "ingame_menu.h"
@@ -32,6 +33,7 @@
 #include "puppyprint.h"
 #include "puppylights.h"
 #include "level_commands.h"
+#include "pl/libpl.h"
 
 #include "config.h"
 
@@ -1230,6 +1232,8 @@ s32 init_level(void) {
     OSTime first = osGetTime();
 #endif
 
+    pl_reset_timer();
+    pl_start_timer();
     set_play_mode(PLAY_MODE_NORMAL);
 
     sDelayedWarpOp = WARP_OP_NONE;

@@ -23,6 +23,7 @@
 #include "sm64.h"
 #include "sound_init.h"
 #include "rumble_init.h"
+#include "pl/libpl.h"
 #include "config.h"
 
 u8  sDelayInvincTimer;
@@ -840,6 +841,8 @@ u32 interact_star_or_key(struct MarioState *m, UNUSED u32 interactType, struct O
 
         play_sound(SOUND_MENU_STAR_SOUND, m->marioObj->header.gfx.cameraToObject);
         update_mario_sound_and_camera(m);
+
+        pl_stop_timer_with_subframe(&obj->oPosVec, m->marioObj->hitboxRadius, m->marioObj->hitboxHeight, m->marioObj->hitboxDownOffset, obj->hitboxRadius, obj->hitboxHeight, obj->hitboxDownOffset);
 
         if (grandStar) {
             return set_mario_action(m, ACT_JUMBO_STAR_CUTSCENE, 0);

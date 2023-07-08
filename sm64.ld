@@ -172,9 +172,10 @@ SECTIONS
       */ULTRALIB.a:*.o(.text*);
       */libnustd.a:*.o(.text*);
       */libgcc.a:*.o(.text*);
+      */libhvqm2.a:*.o(.text*);
       */librtc.a:*.o(.text*);
       */libz.a:*.o(.text*);
-      */libhvqm2.a:*.o(.text*);
+      lib/libpl.o(.text*);
       lib/rspboot.o(.text*);
 #include "rsptext.inc.ld"
       BUILD_DIR/lib/aspMain.o(.text*);
@@ -195,6 +196,7 @@ SECTIONS
       */libhvqm2.a:*.o(.data*);
       */librtc.a:*.o(.data*);
       */libz.a:*.o(.data*);
+      lib/libpl.o(.data*);
 #include "rspdata.inc.ld"
       BUILD_DIR/lib/aspMain.o(.data*);
       lib/PR/audio/n_aspMain.o(.data*);
@@ -211,6 +213,7 @@ SECTIONS
       */libgcc.a:*.o(.rodata*);
       */librtc.a:*.o(.rodata*);
       */libz.a:*.o(.rodata*);
+      lib/libpl.o(.rodata*);
 
       lib/PR/hvqm/hvqm2sp1.o(.rodata*);
    }
@@ -230,6 +233,7 @@ SECTIONS
       */libhvqm2.a:*.o(.bss*);
       */librtc.a:*.o(.bss*);
       */libz.a:*.o(.bss*);
+      lib/libpl.o(.bss*);
       . = ALIGN(0x8);
    }
    END_NOLOAD(main)
