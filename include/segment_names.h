@@ -14,7 +14,7 @@
  */
 
 #define SEGMENT_MAIN                 0x00 // | Segment  0 | General Segment, includes most of /src/ (engine, buffers, goddard, audio, etc.)
-#define SEGMENT_RENDER               0x01 // | Segment  1 | SPTask, GFX pool buffer
+#define SEGMENT_COSTUME_YAY0         0x01 // | Segment  1 | Mario costume yay0
 #define SEGMENT_SEGMENT2             0x02 // | Segment  2 | Segment 2 (Fonts, Text, etc)
 #define SEGMENT_COMMON1_YAY0         0x03 // | Segment  3 | /actors/common1_yay0
 #define SEGMENT_GROUP0_YAY0          0x04 // | Segment  4 | /actors/group0_yay0, also includes boot (/src/boot/) & gd_dynlists (/src/goddard/dynlists/)
@@ -39,8 +39,8 @@
 #define SEGMENT_GROUP0_GEO           0x17 // | Segment 23 | /actors/group0_geo
 #define SEGMENT_DEMO_INPUTS          0x18 // | Segment 24 | Demo Inputs List
 #define SEGMENT_EU_TRANSLATION       0x19 // | Segment 25 | EU language translations
-#define SEGMENT_UNKNOWN_26           0x1A // | Segment 26 | Unknown/Unused?
-#define SEGMENT_UNKNOWN_27           0x1B // | Segment 27 | Unknown/Unused?
+#define SEGMENT_RENDER               0x1A // | Segment 26 | SPTask, GFX pool buffer
+#define SEGMENT_COSTUME_GEO          0x1B // | Segment 27 | Mario costume geo
 #define SEGMENT_UNKNOWN_28           0x1C // | Segment 28 | Unknown/Unused?
 #define SEGMENT_UNKNOWN_29           0x1D // | Segment 29 | Unknown/Unused?
 #define SEGMENT_UNKNOWN_30           0x1E // | Segment 30 | Unknown/Unused?

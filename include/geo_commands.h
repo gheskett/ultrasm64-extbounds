@@ -58,6 +58,7 @@ enum GeoLayoutCommands {
     /*0x1E*/ GEO_CMD_NOP_1E,
     /*0x1F*/ GEO_CMD_NOP_1F,
     /*0x20*/ GEO_CMD_NODE_CULLING_RADIUS,
+    /*0x21*/ GEO_CMD_JUMP_TO_EXISTING_GRAPH_NODE,
 
     GEO_CMD_COUNT,
 };
@@ -468,5 +469,13 @@ enum GeoLayoutCommands {
  */
 #define GEO_CULLING_RADIUS(cullingRadius) \
     CMD_BBH(GEO_CMD_NODE_CULLING_RADIUS, 0x00, cullingRadius)
+
+/**
+ * 0x21: Branch and store return address
+ *   0x01: nuused
+ *   0x02: Model ID to use
+ */
+#define GEO_JUMP_TO_EXISTING_GRAPH_NODE(modelId) \
+    CMD_BBH(GEO_CMD_JUMP_TO_EXISTING_GRAPH_NODE, 0x00, modelId)
 
 #endif // GEO_COMMANDS_H

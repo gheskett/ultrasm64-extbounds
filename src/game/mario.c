@@ -33,6 +33,24 @@
 #include "sound_init.h"
 #include "rumble_init.h"
 
+#include "actors/cstm_mario.h"
+#include "actors/cstm_fire_mario.h"
+
+enum MarioCostume gLoadedCostume = COSTUME_MARIO;
+
+#define COSTUME_STRUCT_ENTRY(costume, marioGeo) { \
+    .yay0Start = GLUE2(_ ## costume, _yay0SegmentRomStart), \
+    .yay0End = GLUE2(_ ## costume, _yay0SegmentRomEnd), \
+    .geoStart = GLUE2(_ ## costume, _geoSegmentRomStart), \
+    .geoEnd = GLUE2(_ ## costume, _geoSegmentRomEnd), \
+    .marioModelGeo = (GeoLayout *) marioGeo, \
+}
+
+const struct MarioCostumeData gMarioCostumes[COSTUME_COUNT] = {
+    [COSTUME_MARIO]      = COSTUME_STRUCT_ENTRY(cstm_mario, mario_geo),
+    [COSTUME_FIRE_MARIO] = COSTUME_STRUCT_ENTRY(cstm_fire_mario, mario_fire_geo),
+};
+
 
 /**************************************************
  *                    ANIMATIONS                  *

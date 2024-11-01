@@ -4,6 +4,7 @@
 #include <PR/ultratypes.h>
 
 #include "types.h"
+#include "mario.h"
 
 enum MemoryPoolSide {
     MEMORY_POOL_LEFT,
@@ -60,6 +61,7 @@ u32 main_pool_pop_state(void);
 void *load_segment(s32 segment, u8 *srcStart, u8 *srcEnd, u32 side, u8 *bssStart, u8 *bssEnd);
 void *load_to_fixed_pool_addr(u8 *destAddr, u8 *srcStart, u8 *srcEnd);
 void *load_segment_decompress(s32 segment, u8 *srcStart, u8 *srcEnd);
+u32 decompress_to_reserved_address(u8 *destAddr, u32 reservedSize, u8 *srcStart, u8 *srcEnd);
 void load_engine_code_segment(void);
 #else
 #define load_segment(...)
@@ -79,5 +81,7 @@ void mem_pool_free(struct MemoryPool *pool, void *addr);
 void *alloc_display_list(u32 size);
 void setup_dma_table_list(struct DmaHandlerList *list, void *srcAddr, void *buffer);
 s32 load_patchable_table(struct DmaHandlerList *list, s32 index);
+
+void load_mario_costume(void);
 
 #endif // MEMORY_H

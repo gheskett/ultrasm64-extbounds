@@ -523,6 +523,23 @@ struct GraphNodeHeldObject *init_graph_node_held_object(struct AllocOnlyPool *po
 }
 
 /**
+ * Allocates and returns a newly created frustum culling radius node
+ */
+struct GraphNodePointer *init_graph_node_pointer(struct AllocOnlyPool *pool,
+                                                              struct GraphNodePointer *graphNode, u32 modelId) {
+    if (pool != NULL) {
+        graphNode = alloc_only_pool_alloc(pool, sizeof(struct GraphNodePointer));
+    }
+
+    if (graphNode != NULL) {
+        init_scene_graph_node_links(&graphNode->node, GRAPH_NODE_TYPE_POINTER);
+        graphNode->modelId = modelId;
+    }
+
+    return graphNode;
+}
+
+/**
  * Adds 'childNode' to the end of the list children from 'parent'
  */
 struct GraphNode *geo_add_child(struct GraphNode *parent, struct GraphNode *childNode) {

@@ -4,9 +4,12 @@
 
 #include "buffers/buffers.h"
 #include "slidec.h"
+#include "game/debug.h"
 #include "game/game_init.h"
 #include "game/main.h"
+#include "game/mario.h"
 #include "game/memory.h"
+#include "game/print.h"
 #include "segment_symbols.h"
 #include "segments.h"
 #ifdef GZIP
@@ -164,6 +167,9 @@ void *main_pool_alloc(u32 size, u32 side) {
             addr = (u8 *) sPoolListHeadR + 16;
         }
     }
+
+    assert(addr != NULL, "Main pool out of memory!");
+
     return addr;
 }
 
@@ -421,6 +427,74 @@ void *load_segment_decompress(s32 segment, u8 *srcStart, u8 *srcEnd) {
     return dest;
 }
 
+/**
+ * Decompress the block of ROM data from srcStart to srcEnd into destAddr.
+ * Returns the size of the uncompressed data, if successful.
+ */
+u32 decompress_to_reserved_address(u8 *destAddr, u32 reservedSize, u8 *srcStart, u8 *srcEnd) {
+    if (!destAddr) {
+        error("reserved destAddr NULL!");
+        return 0;
+    }
+
+#ifdef UNCOMPRESSED
+    aggress((u32) srcEnd - (u32) srcStart <= reservedSize, "uncomp segment too large!");
+    dma_read(destAddr, srcStart, srcEnd);
+    return (u32) srcEnd - (u32) srcStart;
+#else
+
+#ifdef GZIP
+    u32 compSize = (srcEnd - 4 - srcStart);
+#else
+    u32 compSize = ALIGN16(srcEnd - srcStart);
+#endif
+    u8 *compressed = main_pool_alloc(compSize, MEMORY_POOL_RIGHT);
+#ifdef GZIP
+    // Decompressed size from end of gzip
+    u32 *size = (u32 *) (compressed + compSize);
+#endif
+    if (compressed != NULL) {
+        aggress((u32) srcEnd - (u32) srcStart <= reservedSize, "reservedSize too small!");
+        dma_read(compressed, srcStart, srcEnd);
+
+        // These two lines may not be necessary
+        bzero(destAddr, reservedSize);
+        osWritebackDCacheAll();
+
+        osSyncPrintf("start decompress\n");
+#ifdef GZIP
+        expand_gzip(compressed, destAddr, compSize, (u32)size);
+#elif RNC1
+        Propack_UnpackM1(compressed, destAddr);
+#elif RNC2
+        Propack_UnpackM2(compressed, destAddr);
+#elif YAY0
+        slidstart(compressed, destAddr);
+#elif MIO0
+        decompress(compressed, destAddr);
+#endif
+
+        osInvalICache(destAddr, reservedSize);
+        osInvalDCache(destAddr, reservedSize);
+
+        osSyncPrintf("end decompress\n");
+        main_pool_free(compressed);
+
+#ifdef GZIP
+        // Decompressed size from end of gzip
+        return *((u32 *) (compressed + compSize));
+#else
+        // Decompressed size from header (This works for non-mio0 because they also have the size in same place)
+        return *((u32 *) (compressed + 4));
+#endif
+    }
+    
+    error("reserved compressed NULL!");
+
+    return 0;
+#endif
+}
+
 void load_engine_code_segment(void) {
     void *startAddr = (void *) _engineSegmentStart;
     u32 totalSize = _engineSegmentEnd - _engineSegmentStart;
@@ -467,6 +541,8 @@ void *alloc_only_pool_alloc(struct AllocOnlyPool *pool, s32 size) {
         addr = pool->freePtr;
         pool->freePtr += size;
         pool->usedSpace += size;
+    } else {
+        assert(FALSE, "allocPool out of memory!");
     }
     return addr;
 }
@@ -631,4 +707,56 @@ s32 load_patchable_table(struct DmaHandlerList *list, s32 index) {
         }
     }
     return FALSE;
+}
+
+void load_mario_costume(void) {
+    static enum MarioCostume currentlyLoadedCostume = COSTUME_NONE;
+    static u32 costumeSafetyFrames = 0;
+    static u32 yay0Index = 0;
+
+#ifdef MARIO_COSTUME_SELECTION
+    UNUSED static u32 compYAY0Size = 0;
+    UNUSED static u32 geoSize = 0;
+    UNUSED static u32 uncompYAY0Size = 0;
+    
+    print_text_fmt_int(16, 64, "0*%06x", compYAY0Size);
+    print_text_fmt_int(16, 48, "0*%06x", uncompYAY0Size);
+    print_text_fmt_int(16, 32, "0*%06x", geoSize);
+    print_text_fmt_int(16, 16, "0*%06x", (u32) gCostumeAllocPool.usedSpace);
+#endif
+
+    if (costumeSafetyFrames > 0) {
+        costumeSafetyFrames--;
+        return;
+    }
+
+    if (currentlyLoadedCostume == gLoadedCostume) {
+        return;
+    }
+
+    // Load new costume data
+    const struct MarioCostumeData *costumeData = &gMarioCostumes[gLoadedCostume];
+
+    set_segment_base_addr(SEGMENT_COSTUME_YAY0, (void *) gCostumeYAY0Heap[yay0Index]);
+#ifdef MARIO_COSTUME_SELECTION
+    compYAY0Size = (u32) gMarioCostumes[gLoadedCostume].yay0End - (u32) gMarioCostumes[gLoadedCostume].yay0Start;
+    geoSize = (u32) gMarioCostumes[gLoadedCostume].geoEnd - (u32) gMarioCostumes[gLoadedCostume].geoStart;
+    uncompYAY0Size =
+#endif
+    decompress_to_reserved_address(gCostumeYAY0Heap[yay0Index], sizeof(gCostumeYAY0Heap[yay0Index]), costumeData->yay0Start, costumeData->yay0End);
+
+    aggress((u32) costumeData->geoEnd - (u32) costumeData->geoStart <= sizeof(gCostumeGeoHeap), "Costume geo buffer too small!");
+    dma_read(gCostumeGeoHeap, costumeData->geoStart, costumeData->geoEnd);
+
+    gCostumeAllocPool.totalSpace = sizeof(gCostumePoolBuffer);
+    gCostumeAllocPool.usedSpace = 0;
+    gCostumeAllocPool.startPtr = gCostumePoolBuffer;
+    gCostumeAllocPool.freePtr = gCostumePoolBuffer;
+
+    gLoadedGraphNodes[MODEL_UNSAFE_MARIO] = process_geo_layout(&gCostumeAllocPool, costumeData->marioModelGeo);
+    // Add more process_geo_layout calls if adding additional models like Mario Cap
+
+    currentlyLoadedCostume = gLoadedCostume;
+    yay0Index = (yay0Index + 1) % ARRAY_COUNT(gCostumeYAY0Heap);
+    costumeSafetyFrames = 2;
 }

@@ -5,8 +5,8 @@
 
 /* Global models that are loaded for every level */
 
-#define MODEL_MARIO                            0x01        // mario_geo
-#define MODEL_LUIGI                            0x02        // unused
+#define MODEL_MARIO                            0x01        // mario_ref_geo
+#define MODEL_UNSAFE_MARIO                     0x02        // mario_geo (NOTE: These are NOT safe to use like any other model, MUST be a geo reference!)
 
 /* Various static level geometry, the geo layout differs but terrain object presets treat them the same.*/
 
@@ -450,10 +450,10 @@
 #define MODEL_BREAKABLE_BOX_SMALL MODEL_BREAKABLE_BOX_NO_SHADOW // backwards compatibility
 #define MODEL_EXCLAMATION_BOX_OUTLINE     0x83        // exclamation_box_outline_geo
 #define MODEL_EXCLAMATION_POINT           0x84        // exclamation_point_seg8_dl_08025F08
-#define MODEL_MARIOS_WINGED_METAL_CAP     0x85        // marios_winged_metal_cap_geo
-#define MODEL_MARIOS_METAL_CAP            0x86        // marios_metal_cap_geo
-#define MODEL_MARIOS_WING_CAP             0x87        // marios_wing_cap_geo
-#define MODEL_MARIOS_CAP                  0x88        // marios_cap_geo
+// find me
+#define MODEL_MARIOS_METAL_CAP            0x86        // marios_metal_cap_ref_geo
+#define MODEL_MARIOS_WING_CAP             0x87        // marios_wing_cap_ref_geo
+#define MODEL_MARIOS_CAP                  0x88        // marios_cap_ref_geo
 #define MODEL_EXCLAMATION_BOX             0x89        // exclamation_box_geo
 #define MODEL_DIRT_ANIMATION              0x8A        // dirt_animation_geo
 #define MODEL_CARTOON_STAR                0x8B        // cartoon_star_geo
@@ -468,10 +468,10 @@
 #define MODEL_BURN_SMOKE                  0x94        // burn_smoke_geo
 #define MODEL_SPARKLES                    0x95        // sparkles_geo
 #define MODEL_SMOKE                       0x96        // smoke_geo
-// find me
-// find me
-// find me
-// find me
+#define MODEL_UNSAFE_MARIOS_METAL_CAP     0x97        // marios_metal_cap_geo    (NOTE: These are NOT safe to use like any other model, MUST be a geo reference!)
+#define MODEL_UNSAFE_MARIOS_WING_CAP      0x98        // marios_wing_cap_geo     (NOTE: These are NOT safe to use like any other model, MUST be a geo reference!)
+#define MODEL_UNSAFE_MARIOS_CAP           0x99        // marios_cap_geo          (NOTE: These are NOT safe to use like any other model, MUST be a geo reference!)
+#define MODEL_UNSAFE_MARIOS_CAP_EXTERNAL  0x9A        // marios_cap_external_geo (NOTE: These are NOT safe to use like any other model, MUST be a geo reference!)
 // find me
 #define MODEL_BURN_SMOKE_UNUSED           0x9C        // burn_smoke_geo - unused & duplicated
 // find me

@@ -756,6 +756,10 @@ void setup_game_memory(void) {
     load_segment(SEGMENT_LEVEL_ENTRY, _entrySegmentRomStart, _entrySegmentRomEnd, MEMORY_POOL_LEFT, NULL, NULL);
     // Setup Segment 2 (Fonts, Text, etc)
     load_segment_decompress(SEGMENT_SEGMENT2, _segment2_mio0SegmentRomStart, _segment2_mio0SegmentRomEnd);
+
+    // Setup Costume Pools
+    set_segment_base_addr(SEGMENT_COSTUME_GEO, (void *) gCostumeGeoHeap);
+    load_mario_costume();
 }
 
 /**
@@ -791,6 +795,8 @@ void thread5_game_loop(UNUSED void *arg) {
     render_init();
 
     while (TRUE) {
+        load_mario_costume();
+
         profiler_frame_setup();
         // If the reset timer is active, run the process to reset the game.
         if (gResetTimer != 0) {

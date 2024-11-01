@@ -341,6 +341,10 @@ SECTIONS
    STANDARD_OBJECTS(common0, 0x08000000, 0x0F000000)
    STANDARD_OBJECTS(common1, 0x03000000, 0x16000000)
 
+   /* load costume groups */
+   STANDARD_OBJECTS(cstm_mario,      0x01000000, 0x1B000000)
+   STANDARD_OBJECTS(cstm_fire_mario, 0x01000000, 0x1B000000)
+
    /* use segmented addressing for behaviors */
    BEGIN_SEG(behavior, 0x13000000)
    {

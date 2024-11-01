@@ -65,6 +65,7 @@ enum GraphNodeTypes {
     GRAPH_NODE_TYPE_CULLING_RADIUS,
     GRAPH_NODE_TYPE_ROOT,
     GRAPH_NODE_TYPE_START,
+    GRAPH_NODE_TYPE_POINTER,
 };
 
 // Passed as first argument to a GraphNodeFunc to give information about in
@@ -347,6 +348,13 @@ struct GraphNodeCullingRadius {
     // u8 filler[2];
 };
 
+/** A node points to an already generated graph node somewhere else
+ */
+struct GraphNodePointer {
+    /*0x00*/ struct GraphNode node;
+    /*0x14*/ u32 modelId;
+};
+
 extern struct GraphNodeMasterList  *gCurGraphNodeMasterList;
 extern struct GraphNodePerspective *gCurGraphNodeCamFrustum;
 extern struct GraphNodeCamera      *gCurGraphNodeCamera;
@@ -383,6 +391,7 @@ struct GraphNodeObjectParent        *init_graph_node_object_parent       (struct
 struct GraphNodeGenerated           *init_graph_node_generated           (struct AllocOnlyPool *pool, struct GraphNodeGenerated           *graphNode, GraphNodeFunc gfxFunc, s32 parameter);
 struct GraphNodeBackground          *init_graph_node_background          (struct AllocOnlyPool *pool, struct GraphNodeBackground          *graphNode, u16 background, GraphNodeFunc backgroundFunc, s32 zero);
 struct GraphNodeHeldObject          *init_graph_node_held_object         (struct AllocOnlyPool *pool, struct GraphNodeHeldObject          *graphNode, struct Object *objNode, Vec3s translation, GraphNodeFunc nodeFunc, s32 playerIndex);
+struct GraphNodePointer             *init_graph_node_pointer             (struct AllocOnlyPool *pool, struct GraphNodePointer             *graphNode, u32 modelId);
 
 struct GraphNode *geo_add_child       (struct GraphNode *parent, struct GraphNode *childNode);
 struct GraphNode *geo_remove_child    (struct GraphNode *graphNode);

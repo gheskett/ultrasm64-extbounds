@@ -5,6 +5,27 @@
 
 #include "macros.h"
 #include "types.h"
+#include "segments.h"
+
+struct MarioCostumeData {
+    u8 *yay0Start;
+    u8 *yay0End;
+    u8 *geoStart;
+    u8 *geoEnd;
+    GeoLayout *marioModelGeo;
+    // Add more GeoLayouts here if adding additional models like Mario Cap
+};
+
+enum MarioCostume {
+    COSTUME_NONE = -1, // NOTE: This is unsafe to use for anything other than game initialization!
+    COSTUME_MARIO,
+    COSTUME_FIRE_MARIO,
+
+    COSTUME_COUNT
+};
+
+extern enum MarioCostume gLoadedCostume;
+extern const struct MarioCostumeData gMarioCostumes[COSTUME_COUNT];
 
 s32 is_anim_at_end(struct MarioState *m);
 s32 is_anim_past_end(struct MarioState *m);

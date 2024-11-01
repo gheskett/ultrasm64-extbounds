@@ -1016,6 +1016,14 @@ s32 play_mode_normal(void) {
     }
 #endif
 
+#ifdef MARIO_COSTUME_SELECTION
+    if (gPlayer1Controller->buttonPressed & L_JPAD) {
+        gLoadedCostume = (gLoadedCostume + 1) % COSTUME_COUNT;
+    } else if (gPlayer1Controller->buttonPressed & R_JPAD) {
+        gLoadedCostume = (gLoadedCostume + COSTUME_COUNT - 1) % COSTUME_COUNT;
+    }
+#endif
+
     warp_area();
     check_instant_warp();
 

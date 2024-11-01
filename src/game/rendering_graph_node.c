@@ -1168,6 +1168,17 @@ void geo_process_held_object(struct GraphNodeHeldObject *node) {
 }
 
 /**
+ * Process an already existing graph node generated completely separately
+ */
+void geo_process_model_pointer(struct GraphNodePointer *node) {
+    u32 modelId = node->modelId;
+
+    if (modelId < MODEL_ID_COUNT && gLoadedGraphNodes[modelId] != NULL) {
+        geo_process_node_and_siblings(gLoadedGraphNodes[modelId]);
+    }
+}
+
+/**
  * Processes the children of the given GraphNode if it has any
  */
 void geo_try_process_children(struct GraphNode *node) {
@@ -1202,6 +1213,7 @@ static GeoProcessFunc GeoProcessJumpTable[] = {
     [GRAPH_NODE_TYPE_CULLING_RADIUS      ] = geo_try_process_children,
     [GRAPH_NODE_TYPE_ROOT                ] = geo_try_process_children,
     [GRAPH_NODE_TYPE_START               ] = geo_try_process_children,
+    [GRAPH_NODE_TYPE_POINTER             ] = geo_process_model_pointer,
 };
 
 /**

@@ -94,3 +94,8 @@
  * Intentionally crash the game whenever a runtime assertion fails (also invoked by the DEBUG define in the Makefile).
  */
 #define DEBUG_ASSERTIONS
+
+/**
+ * Swap between Mario's costumes using D-Pad
+ */
+#define MARIO_COSTUME_SELECTION

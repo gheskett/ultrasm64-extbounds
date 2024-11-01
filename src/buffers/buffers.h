@@ -10,7 +10,17 @@
 #include "config.h"
 #include "audio/data.h"
 
+// TODO: optimize these later!
+#define COSTUME_HEAP_YAY0_SIZE   ALIGN16(0x40000) // NOTE: This is really the decompressed data size
+#define COSTUME_HEAP_GEO_SIZE    ALIGN16( 0x8000)
+#define COSTUME_POOL_BUFFER_SIZE ALIGN16( 0xC000)
+
 extern u8 gAudioHeap[DOUBLE_SIZE_ON_64_BIT(AUDIO_HEAP_SIZE)];
+
+extern u8 gCostumeYAY0Heap[2][COSTUME_HEAP_YAY0_SIZE]; // Double buffer this
+extern u8 gCostumeGeoHeap[COSTUME_HEAP_GEO_SIZE];
+extern u8 gCostumePoolBuffer[COSTUME_POOL_BUFFER_SIZE];
+extern struct AllocOnlyPool gCostumeAllocPool;
 
 extern u8 gIdleThreadStack[THREAD1_STACK];
 extern u8 gThread3Stack[THREAD3_STACK];
