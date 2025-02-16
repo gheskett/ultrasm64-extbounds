@@ -61,13 +61,10 @@ SAVETYPE ?= eep4k
 $(eval $(call validate-option,SAVETYPE,eep4k eep16k sram))
 ifeq ($(SAVETYPE),eep4k)
   DEFINES += EEP=1 EEP4K=1
-  UNFLOADER_SAVE_TYPE := -s 1
 else ifeq ($(SAVETYPE),eep16k)
   DEFINES += EEP=1 EEP16K=1
-  UNFLOADER_SAVE_TYPE := -s 2
 else ifeq ($(SAVETYPE),sram)
   DEFINES += SRAM=1
-  UNFLOADER_SAVE_TYPE := -s 3
 endif
 
 DEFINES += NO_ERRNO_H=1 NO_GZIP=1
@@ -658,10 +655,10 @@ ifeq (,$(wildcard $(UNFLOADER_EXEC)))
 endif
 
 load: $(ROM) $(UNFLOADER_EXEC)
-	$(UNFLOADER_EXEC) -r $< $(UNFLOADER_SAVE_TYPE)
+	$(UNFLOADER_EXEC) -r $<
 
 unf: $(ROM) $(UNFLOADER_EXEC)
-	$(UNFLOADER_EXEC) -d -r $< $(UNFLOADER_SAVE_TYPE)
+	$(UNFLOADER_EXEC) -d -r $<
 
 libultra: $(BUILD_DIR)/libultra.a
 
